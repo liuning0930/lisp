@@ -1,0 +1,113 @@
+* GUN入门note
+** 快捷键
+  按Tab键，光标所在的行会自动缩放在适合的位置
+** 知识点
+*** 第一章 列表处理
+   1.2 单引号 ’ 表示一个引用，当单引号在一个列表之前时，不要对这个列表进行任何操作，仅仅是按其原样. 如果没有引号，就相当于一条执行的命令。原子之间必须有空格.
+   1.3 错误分析: 当lisp执行一条指令的时候，如果没有发现对应的操作，会出现void 错误提示
+   1.4 符号名和函数定义 按我的理解，符号名有点像人的外号，你不是外号，但外号可以指向你
+   1.5 lisp会按照列表前面有没有单引号 ’ ，没有的话，检查第一个第一个元素，判断它是否是一个函数定义。如果一个列表内有多个嵌入列表，总是按照优先执行最里面的列表,否则从左到右执行。
+   1.7 一个symbol 可以是一个函数和一个值
+   1.8 参量，我感觉就是给函数的参数
+   1.9 setq 设置variables
+   lisp 程序由表达式组成，表达式可以是一个列表，也可以是一个原子
+*** 第二章 求值实践
+   2.1 buffer-name & buffer-file-name 前1个表明缓冲区的名字，后一个显示缓冲文件的名字。我的缓冲理解，当你在编辑一个文件的时候，
+   emacs会建立一个buffer，当你编辑的时候，文件在一个buffer里面，只有当你保存的时候，缓冲的东西存入文件里面。
+   2.3  emacs 工作方式，不同的键序列调动和运行不同的函数
+*** 第三章 如何编写函数定义
+**** defun 函数定义 最多可以有5部分：
+   1) 符号名 函数定义将要依附的符号
+   2) 将要传送给函数的参量列表
+   3) 描述这个函数的文档(optional)
+   4) 一个使函数成为交互函数的表达式
+   5) 函数主体 指导计算机如何运行的代码
+**** 交互型函数
+    快捷键 C-u 输入参数 然后M-x 找到相应函数
+    (interactive "p"),p是告诉Emacs 要传递一个前缀参量给这个函数，并将它的值用于函数参量
+    (interactive) 有20多个预先定义好的字符，在几乎每一种情况下，一个或多个这种选项将使你能够将正确
+    的信息交互地选送给函数(具体参见《GUN Emacs Lisp 技术手册》)
+    例如，字符 r 使emacs 将位点所在区域的开始值和结束值作为函数的两个参量
+
+
+**** other
+    3.6 let函数 相当于局部变量，默认初始值为nil
+    3.7 if 特殊表
+    3.8 if-then-else 真假测试
+    3.9 Lisp中的真与假 假其实就是nil 其他的都为真 (nil有两种意思，表示为一个空列表或者“假”)
+    nil与() 是相同的。
+    3.10 save-excursion 函数,它将当前的位点和标记保存起来，执行函数体，然后，如果位点和标记发生改变
+    就将位点和标记恢复成原来的值。这个特殊表的目的是使用户避免位点和标记的不必要移动.
+    mark是缓冲区的另外一个位置，用C-Space 设置，用C-x C-x让光标回到mark的位置.
+    mark可以设置多个,可以通过C-u C-space 来回跳转mark位置。
+    位点和标记之间的缓冲区叫做现域，或区域。save-excursion函数也跟踪当前的缓冲区，并恢复它。这就意味着，
+    可以编写一些将缓冲区改变的代码，并用它来恢复切换到原来的缓冲区。
+    
+*** 第四章 与缓冲区有关的函数
+   4.1 查找更多的信息
+   包含Lisp代码的文件习惯上称为库
+   4.2 简化的beginning-of-buffer 函数定义
+   它 将光标移动到缓冲区的开始位置，在原来的位置设置一个标记。go-to 函数，光标移动到某个位置。
+   4.3 mark-whole-buffer 函数定义
+   它将整个缓冲区作为一个域来标记，方法是将位点置于缓冲开始的位置，在缓冲区的末尾位置放一个标记。
+   4.4 append-to-buffer 函数定义 .
+   这个命令的功能就是从当前的缓冲区中拷贝一个域到一个指定的域. 它使用 insert-buffer-substring(从一个缓冲区提取一部分作为字符串
+   ，并将这个字符串插入到另外一个缓冲区) 函数来拷贝一个域。
+*** 第五章 更复杂的函数
+   5.1 copy-to-buffer 函数的定义, 里面调了2次save-excursion，第一个是为了返回到将要拷贝的文本的缓冲区，第二次是返回被插入内容的
+   缓冲区的开始设置位点。
+   5.2 insert-buffer 函数中的交互表达式，将另外一个缓冲区内容拷贝到当前缓冲区中。
+   (大写的B 可以允许参量传送不存在的缓冲区)
+   5.3 beginning-of-buffer 函数的完整定义 这个函数的参量是介于1和10之间的一个数。
+   C-u 7 M-< 这是指光标移动到从缓冲区开始的这个缓冲区的70%处。如果大于10，函数则将光标移动到缓冲区的末尾。
+*** 第六章 变窄和增宽
+   变窄 是emacs的一个特性，这个特性允许你让Emacs 关注与一个缓冲区的特定部分，而不会再无意中更改
+   缓冲区其他部分。
+   6.1 save-restriction 特殊表
+   这个用来跟踪变窄开启的部分。  
+   6.2 what-line 函数，告诉你光标所在的行数。
+   (1+ (count-lines 1 (point))) (1+ 函数就是对其参量加1)
+*** 第七章 基本函数：car, cdr, cons
+   cons 函数用于构建列表，car, cdr 函数用于拆分列表
+   7.1 car和cdr 函数
+   一个列表的car,简单地说，就是返回这个列表的第一个元素，cdr 返回后面的元素。这两个函数都是“非破坏性”
+   ，它们不改变所作用的数组。
+   7.2 cons函数
+   cons 必须有一个待插入元素的列表，绝对不能从一无所有开始。如果正在创建一个列表，首先至少需要提供一个
+   空列表。
+   查询列表的长度：length 函数 (length '(list)) => 1
+   7.3 nthcdr 函数
+   nthcdr函数与cdr 函数联系在一起。它所做的就是重复地取列表的cdr。nthcdr 也不改变原有的数组。
+   7.4-7.5 setcar 函数
+   setcar 和 setcdr 函数将一个列表的car和cdr 设置为一个新值。不像car和cdr不改变原始列表，setcar和
+   setcdr 这两个函数实际上改变了原始列表。
+*** 第八章 剪切和存储文本
+   在GUN Emacs 中，无论你何时用 kill 命令从一个缓冲区中剪切一段文本，它总是存储在一个列表中，而且你
+   可以用一个 yank 命令将其重新取回来。
+   保存被剪切的一段文本的列表被称为kill 环(kill ring)
+   8.1 zap-to-char函数
+   函数功能：将光标当前位置与出现特定字符的下一个位置之间这一区域中的文本剪切掉。zap-to-char 函数剪切
+   的文本放在kill环中，并能通过键入C-y(yank) 命令从kill环中找回这些文本。
+   8.5 copy-region-as-kill 函数
+   copy-region-as-kill 函数拷贝缓冲区中的一个文本区域，并将其保存到kill-ring变量中。
+** 基本函数
+  (1) concat 字符串连接
+  (2) subtring 获取部分str
+  (3) message 打印
+  (4) current-buffer 获取当前的buffer other-buffer 获取前一个缓冲buffer
+  (5) set-buffer 我的理解就是显示出其他的buffers，当前的buffer不变
+  
+* 配置过程中note
+** remap 函数
+  A special kind of key binding can be used to remap one command to another,
+  without having to refer to the key sequence(s) bound to the original command.
+  To use this feature, make a key binding for a key sequence that starts with the dummy event remap,
+  followed by the command name you want to remap; for the binding,
+  specify the new definition (usually a command name, but possibly any other valid definition for a key binding). 
+  For example, suppose My mode provides a special command my-kill-line, which should be invoked instead of kill-line.
+  To establish this, its mode keymap should contain the following remapping:
+
+     (define-key my-mode-map [remap kill-line] 'my-kill-line)
+** add-to-list 与push的区别
+   1. 当加一个element到list的时候，add-to-list会检测有没有相同的，不存在才会加入到first。push是直接加入到first。
+   2. add-to-list 可以通过参数，设置把element加在first或者end。
